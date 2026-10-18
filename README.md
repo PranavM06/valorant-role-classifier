@@ -3,7 +3,7 @@
 Predicting a pro Valorant player's role (duelist, initiator, controller, sentinel) from their stat line,
 using 2026 Valorant Champions Tour data. Built for INFO 4604 at CU Boulder.
 
-**Write-up:** https://GITHUB_USERNAME.github.io/valorant-role-classifier/
+**Write-up:** https://PranavM06.github.io/valorant-role-classifier/
 
 **Result:** logistic regression reaches 52.5% accuracy on players it never saw during training
 (4 classes; the most-common-role baseline is 29.6%). Duelists are the easiest role to identify (70%).
