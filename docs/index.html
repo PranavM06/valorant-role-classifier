@@ -13,7 +13,6 @@
     --navy:#0f1923; --navy-2:#1b2733; --red:#ff4655; --paper:#f6f4ef; --card:#ffffff;
     --ink:#1d1d1b; --ink-2:#55544e; --line:#e2dfd6;
     --duelist:#2a78d6; --initiator:#eb6834; --controller:#1baf7a; --sentinel:#eda100;
-    --draft-bg:#fff8e1; --draft-line:#e0a800;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -65,11 +64,6 @@
   .pipeline div{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--navy);padding:12px;font-size:14px}
   .pipeline b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:18px;text-transform:uppercase}
 
-  /* ---------- draft notes: replace each with your own paragraph, then delete ---------- */
-  .draft{background:var(--draft-bg);border:2px dashed var(--draft-line);padding:12px 16px 4px;margin:14px 0;font-size:15px}
-  .draft::before{content:"✏️ DRAFT NOTES — write this up in your own words, then delete this box";
-    display:block;font-size:11.5px;font-weight:600;letter-spacing:.06em;color:#8a6400;margin-bottom:6px}
-  .draft ul{margin:0 0 8px;padding-left:20px}
 
   footer{background:var(--navy);color:#9a968d;font-size:14px;padding:28px 16px}
   footer a{color:#ece8e1}
@@ -89,7 +83,7 @@
     <p class="lede">Predicting which role a pro Valorant player was playing (duelist, initiator, controller or sentinel)
       from their stat line alone, using 2026 Valorant Champions Tour data.</p>
     <p class="byline">Pranav Meka · CS + Data Science, CU Boulder
-      <a href="https://github.com/GITHUB_USERNAME/valorant-role-classifier">Code &amp; notebook on GitHub →</a></p>
+      <a href="https://github.com/PranavM06/valorant-role-classifier">Code &amp; notebook on GitHub →</a></p>
     <div class="roles">
       <span class="chip d">Duelist</span><span class="chip i">Initiator</span>
       <span class="chip c">Controller</span><span class="chip s">Sentinel</span>
@@ -218,8 +212,8 @@
 <footer>
   <div class="wrap">
     Built by Pranav Meka · Python, pandas, scikit-learn, seaborn ·
-    <a href="https://github.com/GITHUB_USERNAME/valorant-role-classifier/blob/main/valorant_role_classifier.ipynb">Full notebook</a> ·
-    Data: <a href="KAGGLE_DATASET_URL">Valorant Champion Tour 2021–2026 Data (Kaggle)</a>.
+    <a href="https://github.com/PranavM06/valorant-role-classifier/blob/main/valorant_role_classifier.ipynb">Full notebook</a> ·
+    Data: <a href="https://www.kaggle.com/datasets/ryanluong1/valorant-champion-tour-2021-2023-data">Valorant Champion Tour 2021–2026 Data (Kaggle)</a>.
     Valorant is a trademark of Riot Games; this is an independent student project.
   </div>
 </footer>
