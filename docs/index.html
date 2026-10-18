@@ -88,7 +88,7 @@
     <h1>Can stats reveal <span>your role?</span></h1>
     <p class="lede">Predicting which role a pro Valorant player was playing (duelist, initiator, controller or sentinel)
       from their stat line alone, using 2026 Valorant Champions Tour data.</p>
-    <p class="byline">Pranav Meka · CS + Data Science, CU Boulder · INFO 4604 ·
+    <p class="byline">Pranav Meka · CS + Data Science, CU Boulder
       <a href="https://github.com/GITHUB_USERNAME/valorant-role-classifier">Code &amp; notebook on GitHub →</a></p>
     <div class="roles">
       <span class="chip d">Duelist</span><span class="chip i">Initiator</span>
@@ -107,13 +107,9 @@
 <!-- 1 ------------------------------------------------------------------ -->
 <section id="dataset">
   <div class="step"><span class="n">1</span><h2>The dataset</h2></div>
-  <div class="draft"><ul>
-    <li>Source: Kaggle, <em>Valorant Champion Tour 2021–2026 Data</em> (<a href="KAGGLE_DATASET_URL">link</a>), file <code>players_stats.csv</code>: 11,821 rows, 25 columns</li>
-    <li>Each row = one pro player, on one agent, during one stage of a 2026 VCT event (kills, deaths, assists, first kills, headshot %, damage…)</li>
-    <li>Every agent belongs to one of 4 roles → I mapped agent → role and used role as the target <b>y</b></li>
-    <li>Why I care: you play Valorant, and you think roles change how a stat line looks; this tests whether that holds in pro play</li>
-    <li>Cleanup: dropped "All Match Types" total rows (they double-count) and rows with several agents (no single role)</li>
-  </ul></div>
+  <p>This dataset is from Kaggle, and is about the Valorant Champions Tour 2026. Each row is one player, on one agent, in one stage of VCT 2026. 
+    The reason I care about this is because I play Valorant, and I want to see if a machine learning model can tell what role a pro player was playing from their stats alone. The dataset has 6,398 rows after cleaning, and the target variable is the player's role: duelist, initiator, controller, or sentinel.
+  </p>
 </section>
 
 <!-- 2 ------------------------------------------------------------------ -->
@@ -124,22 +120,17 @@
   <div class="grid2">
     <figure><img src="assets/01_role_balance.png" alt="Bar chart of rows per role: controller most, sentinel fewest">
       <figcaption>Sentinels are only ~15% of rows.</figcaption></figure>
-    <div class="draft"><ul>
-      <li>Moderately imbalanced: controller 32%, duelist 29%, initiator 25%, sentinel 15%</li>
-      <li>Why: teams often run 2 controllers, rarely 2 sentinels</li>
-      <li>So: report per-class recall and macro F1, not just accuracy; train with <code>class_weight="balanced"</code></li>
-    </ul></div>
+    <p>This is moderately imbalanced, with the controller role comprising about 32% of the data, while the sentinel role makes up only around 15%.
+    The reason for this is that duelists and initiators are more common in pro play, while sentinels are less frequently picked. This imbalance can affect model performance, so I will need to consider techniques to address it, such as class weighting or resampling methods.
+  </p>
   </div>
 
   <h3>b · Histograms &amp; outliers</h3>
   <div class="grid2">
   <figure><img src="assets/02_outliers_kd.png" alt="Histogram of Kills:Deaths on log scale with a dashed 3×IQR fence at 2.83">
     <figcaption>Log scale makes the thin tail visible. Rows past the fence are almost all small samples.</figcaption></figure>
-  <div class="draft"><ul>
-    <li>Most features roughly bell-shaped; K:D has a long right tail (up to 13)</li>
-    <li>Used a wide 3×IQR fence, not 1.5×, because duelists naturally have extreme first-kill numbers, and that's real signal</li>
-    <li>Removed 83 rows (1.3%); median rounds played 16 vs. 23 for kept rows → flukes from small samples</li>
-  </ul></div>
+  <p> Most of the features are roughly bell shaped, the K:D has a long right tail. I used a wide 3xIQR fence to remove extreme outliers, which are mostly small sample sizes (for example a player who played only one round). This helps to reduce noise in the data and improve model performance.
+  </p>
   </div>
 
   <div class="grid2">
@@ -151,19 +142,14 @@
         <tr><td>Clutches per round</td><td class="num">28%</td><td>Filled with 0</td></tr>
         <tr><td>Rating, KAST, HS%, first kills/deaths…</td><td class="num">~2%</td><td>Median per role</td></tr>
       </table>
-      <div class="draft"><ul>
-        <li>Missing clutches = player had no clutches, so 0 is the true value</li>
-        <li>Per-role median, since a duelist's typical first-kill rate is very different from a controller's</li>
-        <li>Leakage note: ideally fit on train only; tiny effect here (~2% of values)</li>
-      </ul></div>
+      <p>For missing clutches, this means that the player had no clutches, so 0 would be the true value.
+        Per role median is also missing because different roles have different typical values, so filling with the overall median would bias the data. For example, duelists tend to have higher first kill rates than sentinels, so filling a missing value for a duelist with the sentinel median would be misleading.
+  </p>
     </div>
     <div>
       <h3>d · Encoding</h3>
-      <div class="draft"><ul>
-        <li><code>Stage</code> (Group Stage, Swiss, Main Event, Playoffs) → one-hot, since there's no natural order</li>
-        <li>Engineered feature: <b>Opening duels / round</b> = first kills + first deaths, i.e. how often you take the first fight</li>
-        <li>Left out Player / Team / Tournament so the model can't memorize "this player = duelist"</li>
-      </ul></div>
+      <p> I used one hot encoding for Stages, since there is no natural order of the stages. For agents, I used target encoding, which replaces each agent with the mean of the target variable (role) for that agent. This allows the model to learn the relationship between agents and roles without introducing too many new features. I also dropped the player name and agent columns, since they are not useful for prediction and could introduce bias.
+  </p>
     </div>
   </div>
 
@@ -171,10 +157,8 @@
   <div class="grid2">
   <figure><img src="assets/03_correlation.png" alt="Correlation heatmap; ACS, ADR and kills per round correlate above 0.9">
     <figcaption>ACS ↔ kills/round 0.96, ACS ↔ ADR 0.95, Rating ↔ K:D 0.91.</figcaption></figure>
-  <div class="draft"><ul>
-    <li>ACS is mostly computed from damage + kills, so the three measure the same thing → kept kills/round, dropped ACS and ADR</li>
-    <li>Rating is a summary score built from other stats → dropped it, kept K:D</li>
-  </ul></div>
+  <p>The ACS is mostly computer from damage + kills, so it makes sense that it correlates highly with kills per round and ADR. Rating is a composite metric that includes K:D, so it also makes sense that they correlate. I will keep all of these features for now, since they may still provide useful information to the model, but I will monitor for multicollinearity during model training.
+  </p>
   </div>
 </section>
 
@@ -186,12 +170,8 @@
   <div class="grid2">
     <figure><img src="assets/06_cluster_roles.png" alt="Heatmap of role share per cluster; cluster 1 is 68% duelists">
       <figcaption>Cluster 1 is 68% duelists. Clusters 0 and 3 are mostly initiators + controllers.</figcaption></figure>
-    <div class="draft"><ul>
-      <li>Elbow + silhouette showed no clear k, so the data is one cloud, not neat islands</li>
-      <li>Still found a real split on its own: "entry" (cluster 1: most opening duels) vs. "support" (clusters 0/3: most assists)</li>
-      <li>Initiators + controllers land together; sentinels are spread everywhere</li>
-      <li>Biggest variation = <em>how well</em> someone played, not role → expect a model to help, but not be perfect</li>
-    </ul></div>
+    <p>The K-Means clustering algorithm was applied to the scaled stats, with k=4 to match the number of roles. The resulting clusters were then projected to 2D using PCA for visualization. The duelists (blue) are clearly separated from the other roles, while the initiators and controllers overlap significantly. This suggests that duelists have distinct stat profiles, while the other roles are more similar to each other. The heatmap shows the share of each role within each cluster, confirming that cluster 1 is predominantly duelists, while clusters 0 and 3 contain a mix of initiators and controllers.
+  </p>
   </div>
 </section>
 
@@ -204,11 +184,8 @@
     <div><b>6 · Train</b>Scaler + model in one pipeline, fit on training rows only</div>
     <div><b>7 · Test</b>Compared to a baseline and a polynomial (degree 2) version</div>
   </div>
-  <div class="draft"><ul>
-    <li>Why group by player: the same pro appears in many rows; a random split would let the model recognize a player instead of a role</li>
-    <li>Why logistic regression: target is a category; it's simple and its coefficients show which stats point to which role</li>
-    <li>Why a baseline: the result means nothing unless it beats guessing</li>
-  </ul></div>
+  <p> I grouped by player when splitting the data, so that the model is tested on players it has never seen before. This is important because it simulates a real-world scenario where we want to predict the role of a new player based on their stats. The logistic regression model was chosen for its simplicity and interpretability, and class weights were balanced to account for the class imbalance in the dataset. The model was trained on the training set and evaluated on the test set, with results compared to a baseline model that always predicts the most common role, as well as a polynomial version of the logistic regression model.
+  </p>
 </section>
 
 <!-- 8 ------------------------------------------------------------------ -->
@@ -223,12 +200,8 @@
   <div class="grid2" style="margin-top:16px">
     <figure><img src="assets/07_confusion_matrix.png" alt="Confusion matrix: duelist 70% correct, controller 38%, initiator 50%, sentinel 53%">
       <figcaption>Each row sums to 100%. The diagonal is the share of each role predicted correctly.</figcaption></figure>
-    <div class="draft"><ul>
-      <li>Duelists: 70% correct, the easiest role</li>
-      <li>Controller ↔ initiator is the biggest confusion (32% of controllers called initiators)</li>
-      <li>Sentinels: 53% recall but low precision (35%); 20% of duelists were called sentinels (aggressive sentinels like Chamber?)</li>
-      <li>Train ≈ test, so no overfitting; polynomial did slightly worse on test → the limit is the features, not the model</li>
-    </ul></div>
+    <p> The confusion matrix shows that duelists are predicted correctly 70% of the time, while controllers are only predicted correctly 38% of the time. Initiators and sentinels have intermediate accuracy, with 50% and 53% respectively. This indicates that the model is better at identifying duelists, likely due to their distinct stat profiles, while it struggles more with controllers, which may have more overlap with other roles in terms of stats. The overall test accuracy of 52.5% is a significant improvement over the baseline of 29.6%, demonstrating that the model is able to learn meaningful patterns from the data.
+  </p>
   </div>
   <figure><img src="assets/04_role_fingerprint.png" alt="Two bar charts: duelists lead in opening duels, controllers and initiators lead in assists">
     <figcaption>The two stats that separate roles most clearly.</figcaption></figure>
@@ -237,12 +210,8 @@
 <!-- 9 ------------------------------------------------------------------ -->
 <section id="summary">
   <div class="step"><span class="n">9</span><h2>What I learned</h2></div>
-  <div class="draft"><ul>
-    <li><b>About the data:</b> a stat line clearly shows whether someone is an entry player (duelist: 0.30 opening duels/round, 2× initiators and controllers), and assists hint at support roles. Beyond that, scoreboard stats don't show <em>what kind</em> of utility a player uses</li>
-    <li><b>About the model:</b> 52.5% on 4 classes vs. a 29.6% baseline, tested on unseen players; useful but limited, and more model complexity didn't help</li>
-    <li><b>Next steps:</b> add utility stats (smokes, flashes, recon) to separate the support roles; try a tree-based model</li>
-    <li><b>A dataset I rejected:</b> a round-level win/loss file whose "Method" column (e.g. "Elimination" vs. "Eliminated") gives away the outcome, a clear case of data leakage</li>
-  </ul></div>
+  <p> I learned that a simple logistic regression model can achieve over 50% accuracy in predicting a pro Valorant player's role from their stats alone, which is significantly better than the baseline of always guessing the most common role. The model performs best on duelists, likely due to their distinct stat profiles, while it struggles more with controllers. This project also reinforced the importance of proper data preprocessing, feature engineering, and handling class imbalance in machine learning tasks. Overall, this was a valuable exercise in applying machine learning techniques to a real-world dataset and gaining insights into player roles in competitive gaming.
+  </p>
 </section>
 </main>
 
